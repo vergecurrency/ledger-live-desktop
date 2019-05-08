@@ -29,6 +29,7 @@ const icons = {
   ethereum: 'ethereum',
   fido: 'fido',
   litecoin: 'litecoin',
+  verge: 'verge',
   stratis: 'stratis',
   ripple: 'ripple',
   zcash: 'zcash',
