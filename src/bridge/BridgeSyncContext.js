@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-prop-types */
 // @flow
 // Unify the synchronization management for bridges with the redux store
 // it handles automatically re-calling synchronize
@@ -5,7 +6,7 @@
 
 import logger from 'logger'
 import shuffle from 'lodash/shuffle'
-import React, { Component } from 'react'
+import React, { Component, useContext } from 'react'
 import priorityQueue from 'async/priorityQueue'
 import { connect } from 'react-redux'
 import type { Account } from '@ledgerhq/live-common/lib/types'
@@ -18,7 +19,8 @@ import { accountsSelector, isUpToDateSelector } from 'reducers/accounts'
 import { currenciesStatusSelector, currencyDownStatusLocal } from 'reducers/currenciesStatus'
 import { SYNC_MAX_CONCURRENT } from 'config/constants'
 import type { CurrencyStatus } from 'reducers/currenciesStatus'
-import { getBridgeForCurrency } from '.'
+import { getAccountBridge } from '.'
+import { track } from '../analytics/segment'
 
 type BridgeSyncProviderProps = {
   children: *,
@@ -50,6 +52,8 @@ export type Sync = (action: BehaviorAction) => void
 // $FlowFixMe
 const BridgeSyncContext = React.createContext((_: BehaviorAction) => {})
 
+export const useBridgeSync = () => useContext(BridgeSyncContext)
+
 const mapStateToProps = createStructuredSelector({
   currenciesStatus: currenciesStatusSelector,
   accounts: accountsSelector,
@@ -61,6 +65,8 @@ const actions = {
   updateAccountWithUpdater,
   setAccountSyncState,
 }
+
+const lastTimeAnalyticsTrackPerAccountId = {}
 
 class Provider extends Component<BridgeSyncProviderOwnProps, Sync> {
   constructor() {
@@ -83,20 +89,43 @@ class Provider extends Component<BridgeSyncProviderOwnProps, Sync> {
         return
       }
 
-      const bridge = getBridgeForCurrency(account.currency)
+      const bridge = getAccountBridge(account)
 
       this.props.setAccountSyncState(accountId, { pending: true, error: null })
 
-      // TODO use Subscription to unsubscribe at relevant time
-      bridge.synchronize(account).subscribe({
+      const startSyncTime = Date.now()
+      const trackedRecently =
+        lastTimeAnalyticsTrackPerAccountId[accountId] &&
+        startSyncTime - lastTimeAnalyticsTrackPerAccountId[accountId] < 90 * 1000
+      if (!trackedRecently) {
+        lastTimeAnalyticsTrackPerAccountId[accountId] = startSyncTime
+      }
+      const trackEnd = event => {
+        if (trackedRecently) return
+        const account = this.props.accounts.find(a => a.id === accountId)
+        if (!account) return
+        track(event, {
+          duration: (Date.now() - startSyncTime) / 1000,
+          currencyName: account.currency.name,
+          derivationMode: account.derivationMode,
+          freshAddressPath: account.freshAddressPath,
+          operationsLength: account.operations.length,
+        })
+      }
+
+      bridge.startSync(account, false).subscribe({
         next: accountUpdater => {
           this.props.updateAccountWithUpdater(accountId, accountUpdater)
         },
         complete: () => {
+          trackEnd('SyncSuccess')
           this.props.setAccountSyncState(accountId, { pending: false, error: null })
           next()
         },
         error: error => {
+          if (!error || error.name !== 'NetworkDown') {
+            trackEnd('SyncError')
+          }
           logger.critical(error)
           this.props.setAccountSyncState(accountId, { pending: false, error })
           next()
@@ -127,7 +156,7 @@ class Provider extends Component<BridgeSyncProviderOwnProps, Sync> {
         }
       },
 
-      SET_SKIP_UNDER_PRIORITY: ({ priority }) => {
+      SET_SKIP_UNDER_PRIORITY: ({ priority }: { priority: number }) => {
         if (priority === skipUnderPriority) return
         skipUnderPriority = priority
         syncQueue.remove(({ priority }) => priority < skipUnderPriority)
@@ -137,15 +166,21 @@ class Provider extends Component<BridgeSyncProviderOwnProps, Sync> {
         }
       },
 
-      SYNC_ALL_ACCOUNTS: ({ priority }) => {
+      SYNC_ALL_ACCOUNTS: ({ priority }: { priority: number }) => {
         schedule(shuffledAccountIds(), priority)
       },
 
-      SYNC_ONE_ACCOUNT: ({ accountId, priority }) => {
+      SYNC_ONE_ACCOUNT: ({ accountId, priority }: { accountId: string, priority: number }) => {
         schedule([accountId], priority)
       },
 
-      SYNC_SOME_ACCOUNTS: ({ accountIds, priority }) => {
+      SYNC_SOME_ACCOUNTS: ({
+        accountIds,
+        priority,
+      }: {
+        accountIds: string[],
+        priority: number,
+      }) => {
         schedule(accountIds, priority)
       },
     }

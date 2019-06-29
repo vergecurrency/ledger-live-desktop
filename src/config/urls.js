@@ -18,11 +18,14 @@ export const urls = {
   noDeviceBuyNew: 'https://www.ledgerwallet.com/',
   noDeviceTrackOrder: 'http://order.ledgerwallet.com/',
   noDeviceLearnMore: 'https://www.ledgerwallet.com/',
-  managerHelpRequest: 'https://support.ledgerwallet.com/hc/en-us/articles/360006523674 ',
+  managerHelpRequest: 'https://support.ledger.com/hc/en-us/articles/360006523674 ',
   contactSupport: 'https://support.ledgerwallet.com/hc/en-us/requests/new?ticket_form_id=248165',
-  feesMoreInfo: 'https://support.ledgerwallet.com/hc/en-us/articles/360006535873',
+  feesMoreInfo: 'https://support.ledger.com/hc/en-us/articles/360006535873',
   recipientAddressInfo: 'https://support.ledger.com/hc/en-us/articles/360006433934',
   privacyPolicy: 'https://www.ledger.com/pages/privacy-policy',
+  troubleshootingUSB: 'https://support.ledger.com/hc/en-us/articles/115005165269',
+  managerERC20: 'https://support.ledger.com/hc/en-us/articles/115005197845-Manage-ERC20-tokens',
+  appSupport: 'https://support.ledger.com/hc/en-us/categories/115000811829-Apps',
 
   githubIssues:
     'https://github.com/LedgerHQ/ledger-live-desktop/issues?q=is%3Aissue+is%3Aopen+label%3Abug+sort%3Acomments-desc',
@@ -45,7 +48,7 @@ export const urls = {
 
   // Errors
   errors: {
-    CantOpenDevice: 'https://support.ledgerwallet.com/hc/en-us/articles/115005165269',
+    CantOpenDevice: 'https://support.ledger.com/hc/en-us/articles/115005165269',
   },
 
   // Currencies status

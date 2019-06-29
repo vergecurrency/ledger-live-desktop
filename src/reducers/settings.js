@@ -9,14 +9,20 @@ import {
 import { getLanguages } from 'config/languages'
 import { createSelector } from 'reselect'
 import type { InputSelector as Selector } from 'reselect'
-import type { CryptoCurrency, Currency, Account } from '@ledgerhq/live-common/lib/types'
+import type { CryptoCurrency, Currency } from '@ledgerhq/live-common/lib/types'
 import { currencySettingsDefaults } from 'helpers/SettingsDefaults'
 import { getSystemLocale } from 'helpers/systemLocale'
 
 import type { CurrencySettings } from 'types/common'
 import type { State } from 'reducers'
 
-export const intermediaryCurrency = getCryptoCurrencyById('bitcoin')
+const bitcoin = getCryptoCurrencyById('bitcoin')
+const ethereum = getCryptoCurrencyById('ethereum')
+export const possibleIntermediaries = [bitcoin, ethereum]
+export const intermediaryCurrency = (from: Currency, _to: Currency) => {
+  if (from === ethereum || from.type === 'TokenCurrency') return ethereum
+  return bitcoin
+}
 
 export const timeRangeDaysByKey = {
   week: 7,
@@ -32,7 +38,6 @@ export type SettingsState = {
   loaded: boolean, // is the settings loaded from db (it not we don't save them)
   hasCompletedOnboarding: boolean,
   counterValue: string,
-  counterValueExchange: ?string,
   language: ?string,
   region: ?string,
   orderAccounts: string,
@@ -44,46 +49,49 @@ export type SettingsState = {
   currenciesSettings: {
     [currencyId: string]: CurrencySettings,
   },
+  pairExchanges: {
+    [pair: string]: ?string,
+  },
   developerMode: boolean,
   shareAnalytics: boolean,
   sentryLogs: boolean,
   lastUsedVersion: string,
   dismissedBanners: string[],
+  accountsViewMode: 'card' | 'list',
+  showAccountsHelperBanner: boolean,
 }
 
-const defaultsForCurrency: CryptoCurrency => CurrencySettings = crypto => {
+const defaultsForCurrency: Currency => CurrencySettings = crypto => {
   const defaults = currencySettingsDefaults(crypto)
   return {
     confirmationsNb: defaults.confirmationsNb ? defaults.confirmationsNb.def : 0,
-    exchange: '',
   }
 }
 
 const INITIAL_STATE: SettingsState = {
   hasCompletedOnboarding: false,
   counterValue: 'USD',
-  counterValueExchange: null,
   language: null,
   region: null,
-  orderAccounts: 'balance|asc',
+  orderAccounts: 'balance|desc',
   countervalueFirst: false,
   hasPassword: false,
   autoLockTimeout: 10,
   selectedTimeRange: 'month',
   marketIndicator: 'western',
   currenciesSettings: {},
+  pairExchanges: {},
   developerMode: !!process.env.__DEV__,
   loaded: false,
   shareAnalytics: true,
   sentryLogs: true,
   lastUsedVersion: __APP_VERSION__,
   dismissedBanners: [],
+  accountsViewMode: 'card',
+  showAccountsHelperBanner: true,
 }
 
-function asCryptoCurrency(c: Currency): ?CryptoCurrency {
-  // $FlowFixMe
-  return 'coinType' in c ? c : null
-}
+const pairHash = (from, to) => `${from.ticker}_${to.ticker}`
 
 const handlers: Object = {
   SETTINGS_SET_PAIRS: (
@@ -98,22 +106,10 @@ const handlers: Object = {
       }>,
     },
   ) => {
-    const counterValueCurrency = counterValueCurrencyLocalSelector(state)
     const copy = { ...state }
-    copy.currenciesSettings = { ...copy.currenciesSettings }
+    copy.pairExchanges = { ...copy.pairExchanges }
     for (const { to, from, exchange } of pairs) {
-      const fromCrypto = asCryptoCurrency(from)
-      if (fromCrypto && to.ticker === intermediaryCurrency.ticker) {
-        copy.currenciesSettings[fromCrypto.id] = {
-          ...copy.currenciesSettings[fromCrypto.id],
-          exchange,
-        }
-      } else if (
-        from.ticker === intermediaryCurrency.ticker &&
-        to.ticker === counterValueCurrency.ticker
-      ) {
-        copy.counterValueExchange = exchange
-      }
+      copy.pairExchanges[pairHash(from, to)] = exchange
     }
     return copy
   },
@@ -136,10 +132,9 @@ const handlers: Object = {
     ...state,
     dismissedBanners: [...state.dismissedBanners, bannerId],
   }),
-  CLEAN_ACCOUNTS_CACHE: (state: SettingsState) => ({
-    ...state,
-    dismissedBanners: [],
-  }),
+
+  // used to debug performance of redux updates
+  DEBUG_TICK: state => ({ ...state }),
 }
 
 // TODO refactor selectors to *Selector naming convention
@@ -160,13 +155,9 @@ export const counterValueCurrencySelector = createSelector(
   counterValueCurrencyLocalSelector,
 )
 
-export const countervalueFirstSelector = createSelector(storeSelector, s => s.countervalueFirst)
-
-export const counterValueExchangeLocalSelector = (s: SettingsState) => s.counterValueExchange
-
-export const counterValueExchangeSelector = createSelector(
+export const countervalueFirstSelector = createSelector(
   storeSelector,
-  counterValueExchangeLocalSelector,
+  s => s.countervalueFirst,
 )
 
 export const developerModeSelector = (state: State): boolean => state.settings.developerMode
@@ -191,7 +182,10 @@ export const langAndRegionSelector = (
   return { language, region, useSystem: true }
 }
 
-export const languageSelector = createSelector(langAndRegionSelector, o => o.language)
+export const languageSelector = createSelector(
+  langAndRegionSelector,
+  o => o.language,
+)
 
 export const localeSelector = createSelector(
   langAndRegionSelector,
@@ -204,9 +198,9 @@ export const areSettingsLoaded = (state: State) => state.settings.loaded
 
 export const currencySettingsLocaleSelector = (
   settings: SettingsState,
-  currency: CryptoCurrency,
+  currency: Currency,
 ): CurrencySettings => {
-  const currencySettings = settings.currenciesSettings[currency.id]
+  const currencySettings = settings.currenciesSettings[currency.ticker]
   const val = { ...defaultsForCurrency(currency), ...currencySettings }
   return val
 }
@@ -215,23 +209,29 @@ type CSS = Selector<*, { currency: CryptoCurrency }, CurrencySettings>
 
 export const currencyPropExtractor = (_: *, { currency }: *) => currency
 
+// TODO drop (bad perf implication)
 export const currencySettingsSelector: CSS = createSelector(
   storeSelector,
   currencyPropExtractor,
   currencySettingsLocaleSelector,
 )
 
-export const currencySettingsForAccountSelector = (
+export const exchangeSettingsForPairSelector = (
   state: State,
-  { account }: { account: Account },
-) => currencySettingsSelector(state, { currency: account.currency })
+  { from, to }: { from: Currency, to: Currency },
+): ?string => state.settings.pairExchanges[pairHash(from, to)]
 
-type ESFAS = Selector<*, { account: Account }, ?string>
-export const exchangeSettingsForAccountSelector: ESFAS = createSelector(
-  currencySettingsForAccountSelector,
-  settings => settings.exchange,
-)
+export const confirmationsNbForCurrencySelector = (
+  state: State,
+  { currency }: { currency: CryptoCurrency },
+): number => {
+  const obj = state.settings.currenciesSettings[currency.ticker]
+  if (obj) return obj.confirmationsNb
+  const defs = currencySettingsDefaults(currency)
+  return defs.confirmationsNb ? defs.confirmationsNb.def : 0
+}
 
+export const accountsViewModeSelector = (state: State) => state.settings.accountsViewMode
 export const marketIndicatorSelector = (state: State) => state.settings.marketIndicator
 export const sentryLogsSelector = (state: State) => state.settings.sentryLogs
 export const autoLockTimeoutSelector = (state: State) => state.settings.autoLockTimeout
@@ -242,15 +242,18 @@ export const hasCompletedOnboardingSelector = (state: State) =>
 
 export const dismissedBannersSelector = (state: State) => state.settings.dismissedBanners || []
 
+export const dismissedBannerSelector = (state: State, { bannerKey }: { bannerKey: string }) =>
+  (state.settings.dismissedBanners || []).includes(bannerKey)
+
 export const exportSettingsSelector = createSelector(
   counterValueCurrencySelector,
-  counterValueExchangeSelector,
   state => state.settings.currenciesSettings,
+  state => state.settings.pairExchanges,
   developerModeSelector,
-  (counterValueCurrency, counterValueExchange, currenciesSettings, developerModeEnabled) => ({
+  (counterValueCurrency, currenciesSettings, pairExchanges, developerModeEnabled) => ({
     counterValue: counterValueCurrency.ticker,
-    counterValueExchange,
     currenciesSettings,
+    pairExchanges,
     developerModeEnabled,
   }),
 )

@@ -78,7 +78,7 @@ class Chart extends Component<Props> {
     const { width } = this._ruler.getBoundingClientRect()
     this._width = width
     this.createChart()
-    observeResize(this._ruler, width => {
+    this.subResize = observeResize(this._ruler, width => {
       if (width !== this._width) {
         this._width = width
         this.refreshChart(this.props)
@@ -107,6 +107,11 @@ class Chart extends Component<Props> {
     this.refreshChart(prevProps)
   }
 
+  componentWillUnmount() {
+    if (this.subResize) this.subResize()
+  }
+
+  subResize: *
   _ruler: any
   _node: any
   _width: number

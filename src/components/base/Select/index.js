@@ -1,9 +1,11 @@
 // @flow
 
 import React, { PureComponent } from 'react'
-import ReactSelect from 'react-select'
+import ReactSelect, { components } from 'react-select'
 import AsyncReactSelect from 'react-select/lib/Async'
 import { translate } from 'react-i18next'
+import { FixedSizeList as List } from 'react-window'
+import styled from 'styled-components'
 
 import createStyles from './createStyles'
 import createRenderers from './createRenderers'
@@ -39,6 +41,50 @@ export type Option = {
   data: any,
 }
 
+const Row = styled.div`
+  &:hover {
+    background: ${p => p.theme.colors.lightGraphite};
+  }
+`
+const rowHeight = 40 // Fixme We should pass this as a prop for dynamic rows?
+class MenuList extends PureComponent<*> {
+  render() {
+    const {
+      options,
+      children,
+      maxHeight,
+      getValue,
+      selectProps: { noOptionsMessage },
+    } = this.props
+    const [value] = getValue()
+    const initialOffset = options.indexOf(value) * rowHeight
+    const minHeight = Math.min(...[maxHeight, rowHeight * children.length])
+
+    if (!children.length && noOptionsMessage) {
+      return <components.NoOptionsMessage {...this.props} />
+    }
+
+    children.length &&
+      children.map(key => {
+        delete key.props.innerProps.onMouseMove // NB: Removes lag on hover, see https://github.com/JedWatson/react-select/issues/3128#issuecomment-433834170
+        delete key.props.innerProps.onMouseOver
+        return null
+      })
+
+    return (
+      <List
+        width="100%"
+        height={minHeight}
+        overscanCount={8}
+        itemCount={children.length}
+        itemSize={rowHeight}
+        initialScrollOffset={initialOffset}
+      >
+        {({ index, style }) => <Row style={style}>{children[index]}</Row>}
+      </List>
+    )
+  }
+}
 class Select extends PureComponent<Props> {
   componentDidMount() {
     if (this.ref && this.props.autoFocus) {
@@ -92,10 +138,13 @@ class Select extends PureComponent<Props> {
       <Comp
         ref={c => (this.ref = c)}
         value={value}
-        maxMenuHeight={200}
+        maxMenuHeight={rowHeight * 4.5}
         classNamePrefix="select"
         options={options}
-        components={createRenderers({ renderOption, renderValue })}
+        components={{
+          MenuList,
+          ...createRenderers({ renderOption, renderValue }),
+        }}
         styles={createStyles({ width, minWidth, small, isRight, isLeft })}
         placeholder={placeholder}
         isDisabled={isDisabled}
@@ -106,6 +155,7 @@ class Select extends PureComponent<Props> {
         blurInputOnSelect={false}
         backspaceRemovesValue
         menuShouldBlockScroll
+        menuPortalTarget={document.body}
         {...props}
         onChange={this.handleChange}
       />

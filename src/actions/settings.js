@@ -2,6 +2,7 @@
 
 import type { Dispatch } from 'redux'
 import type { SettingsState as Settings } from 'reducers/settings'
+import type { PortfolioRange } from '@ledgerhq/live-common/lib/types/portfolio'
 import type { Currency } from '@ledgerhq/live-common/lib/types'
 
 export type SaveSettings = ($Shape<Settings>) => { type: string, payload: $Shape<Settings> }
@@ -13,6 +14,9 @@ export const saveSettings: SaveSettings = payload => ({
 
 export const setCountervalueFirst = (countervalueFirst: boolean) =>
   saveSettings({ countervalueFirst })
+export const setAccountsViewMode = (accountsViewMode: *) => saveSettings({ accountsViewMode })
+export const setSelectedTimeRange = (selectedTimeRange: PortfolioRange) =>
+  saveSettings({ selectedTimeRange })
 export const setDeveloperMode = (developerMode: boolean) => saveSettings({ developerMode })
 export const setSentryLogs = (sentryLogs: boolean) => saveSettings({ sentryLogs })
 export const setShareAnalytics = (shareAnalytics: boolean) => saveSettings({ shareAnalytics })
@@ -21,12 +25,10 @@ export const setAutoLockTimeout = (autoLockTimeout: *) => saveSettings({ autoLoc
 export const setCounterValue = (counterValue: string) =>
   saveSettings({
     counterValue,
-    counterValueExchange: null,
+    pairExchanges: {},
   })
 export const setLanguage = (language: ?string) => saveSettings({ language })
 export const setRegion = (region: ?string) => saveSettings({ region })
-export const setCounterValueExchange = (counterValueExchange: ?string) =>
-  saveSettings({ counterValueExchange })
 
 type FetchSettings = (*) => (Dispatch<*>) => void
 export const fetchSettings: FetchSettings = (settings: *) => dispatch => {
@@ -49,7 +51,7 @@ export const setExchangePairsAction: SetExchangePairs = pairs => ({
   pairs,
 })
 
-export const dismissBanner = (bannerId: string) => ({
+export const dismissBanner = (bannerKey: string) => ({
   type: 'SETTINGS_DISMISS_BANNER',
-  payload: bannerId,
+  payload: bannerKey,
 })

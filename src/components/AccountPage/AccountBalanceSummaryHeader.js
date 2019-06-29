@@ -1,44 +1,47 @@
 // @flow
 
 import React, { PureComponent } from 'react'
-import type { BigNumber } from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { translate } from 'react-i18next'
-import type { Currency, Account } from '@ledgerhq/live-common/lib/types'
+import type { Currency, ValueChange, Account, TokenAccount } from '@ledgerhq/live-common/lib/types'
 
 import type { T } from 'types/common'
 
-import { saveSettings } from 'actions/settings'
+import { setSelectedTimeRange } from 'actions/settings'
 import type { TimeRange } from 'reducers/settings'
 
 import { BalanceTotal, BalanceSinceDiff, BalanceSincePercent } from 'components/BalanceInfos'
 import Box, { Tabbable } from 'components/base/Box'
 import FormattedVal from 'components/base/FormattedVal'
+import Price from 'components/Price'
 import PillsDaysCount from 'components/PillsDaysCount'
 import styled from 'styled-components'
 import Swap from '../../icons/Swap'
 
 type Props = {
   isAvailable: boolean,
-  first: {
-    date: Date,
-    value: BigNumber,
-    countervalue: BigNumber,
-  },
+  cryptoChange: ValueChange,
+  countervalueChange: ValueChange,
   last: {
-    date: Date,
     value: BigNumber,
     countervalue: BigNumber,
   },
   counterValue: Currency,
   t: T,
-  account: Account,
-  saveSettings: ({ selectedTimeRange: TimeRange }) => *,
+  account: Account | TokenAccount,
+  setSelectedTimeRange: TimeRange => *,
   selectedTimeRange: TimeRange,
   countervalueFirst: boolean,
   setCountervalueFirst: boolean => void,
 }
+
+const Wrapper = styled(Box)`
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+`
 
 const SwapButton = styled(Tabbable).attrs({
   color: 'dark',
@@ -69,12 +72,12 @@ const SwapButton = styled(Tabbable).attrs({
 `
 
 const mapDispatchToProps = {
-  saveSettings,
+  setSelectedTimeRange,
 }
 
 class AccountBalanceSummaryHeader extends PureComponent<Props> {
   handleChangeSelectedTime = item => {
-    this.props.saveSettings({ selectedTimeRange: item.key })
+    this.props.setSelectedTimeRange(item.key)
   }
 
   render() {
@@ -84,21 +87,26 @@ class AccountBalanceSummaryHeader extends PureComponent<Props> {
       counterValue,
       selectedTimeRange,
       isAvailable,
-      first,
+      cryptoChange,
       last,
+      countervalueChange,
       countervalueFirst,
       setCountervalueFirst,
     } = this.props
 
-    const unit = account.unit
+    const currency = account.type === 'Account' ? account.currency : account.token
+    const unit = account.type === 'Account' ? account.unit : currency.units[0]
     const cvUnit = counterValue.units[0]
     const data = [
-      { oldBalance: first.value, balance: last.value, unit },
-      { oldBalance: first.countervalue, balance: last.countervalue, unit: cvUnit },
+      { valueChange: cryptoChange, balance: last.value, unit },
+      { valueChange: countervalueChange, balance: last.countervalue, unit: cvUnit },
     ]
     if (countervalueFirst) {
       data.reverse()
     }
+
+    const primaryKey = data[0].unit.code
+    const secondaryKey = data[1].unit.code
 
     return (
       <Box flow={4} mb={2}>
@@ -107,37 +115,53 @@ class AccountBalanceSummaryHeader extends PureComponent<Props> {
             <Swap />
           </SwapButton>
           <BalanceTotal
-            style={{ cursor: 'pointer' }}
+            key={primaryKey}
+            style={{
+              cursor: 'pointer',
+              overflow: 'hidden',
+              flexShrink: 1,
+            }}
             onClick={() => setCountervalueFirst(!countervalueFirst)}
             showCryptoEvenIfNotAvailable
             isAvailable={isAvailable}
             totalBalance={data[0].balance}
             unit={data[0].unit}
           >
-            <FormattedVal
-              key={account.id}
-              animateTicker
-              disableRounding
-              alwaysShowSign={false}
-              color="warmGrey"
-              unit={data[1].unit}
-              fontSize={6}
-              showCode
-              val={data[1].balance}
-            />
+            <Wrapper>
+              <div style={{ width: 'auto', marginRight: 8 }}>
+                <FormattedVal
+                  key={secondaryKey}
+                  animateTicker
+                  disableRounding
+                  alwaysShowSign={false}
+                  color="warmGrey"
+                  unit={data[1].unit}
+                  fontSize={6}
+                  showCode
+                  val={data[1].balance}
+                />
+              </div>
+              <Price
+                unit={unit}
+                from={currency}
+                withActivityCurrencyColor
+                withEquality
+                color="warmGrey"
+                fontSize={4}
+              />
+            </Wrapper>
           </BalanceTotal>
           <Box>
             <PillsDaysCount selected={selectedTimeRange} onChange={this.handleChangeSelectedTime} />
           </Box>
         </Box>
-        <Box horizontal justifyContent="center" flow={7}>
+        <Box key={primaryKey} horizontal justifyContent="center" flow={7}>
           <BalanceSincePercent
             isAvailable={isAvailable}
             t={t}
             alignItems="center"
             totalBalance={data[0].balance}
-            sinceBalance={data[0].oldBalance}
-            refBalance={data[0].oldBalance}
+            valueChange={data[0].valueChange}
             since={selectedTimeRange}
           />
           <BalanceSinceDiff
@@ -146,8 +170,7 @@ class AccountBalanceSummaryHeader extends PureComponent<Props> {
             unit={data[0].unit}
             alignItems="center"
             totalBalance={data[0].balance}
-            sinceBalance={data[0].oldBalance}
-            refBalance={data[0].oldBalance}
+            valueChange={data[0].valueChange}
             since={selectedTimeRange}
           />
         </Box>

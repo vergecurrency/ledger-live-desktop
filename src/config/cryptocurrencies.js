@@ -31,7 +31,10 @@ const supported: CryptoCurrencyIds[] = [
   'clubcoin',
   'decred',
   'bitcoin_testnet',
+  'ethereum_ropsten',
 ]
+
+export const isCurrencySupported = (currency: CryptoCurrency) => supported.includes(currency.id)
 
 export const listCryptoCurrencies: (
   withDevCrypto?: boolean,

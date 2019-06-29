@@ -27,12 +27,6 @@ export const experimentalFeatures: Feature[] = [
   },
   {
     type: 'toggle',
-    name: 'EXPERIMENTAL_EXPLORERS',
-    title: 'Experimental nodes',
-    description: "Connect to Ledger's new blockchain nodes.",
-  },
-  {
-    type: 'toggle',
     name: 'MANAGER_DEV_MODE',
     title: 'Developer mode',
     description: 'Show developer and testnet apps in the Manager.',
@@ -52,6 +46,24 @@ export const experimentalFeatures: Feature[] = [
       'Alternative USB implementation that might help solve USB issues. Enabling this feature might create UI glitches.',
   },
   {
+    type: 'toggle',
+    name: 'EXPERIMENTAL_NATIVE_SEGWIT',
+    title: 'Native Segwit',
+    description: 'Experimental support of Native Segwit (bech32).',
+  },
+  {
+    type: 'toggle',
+    name: 'EXPERIMENTAL_EXPLORERS',
+    title: 'Experimental nodes',
+    description: "Connect to Ledger's new blockchain nodes.",
+  },
+  {
+    type: 'toggle',
+    name: 'EXPERIMENTAL_LIBCORE',
+    title: 'Experimental Core',
+    description: 'Enable experimental Ledger lib-core features.',
+  },
+  {
     shadow: true,
     type: 'toggle',
     name: 'FORCE_PROVIDER',
@@ -60,13 +72,42 @@ export const experimentalFeatures: Feature[] = [
     title: 'Pre-release apps',
     description: 'Enable pre-release apps in the Manager',
   },
+  {
+    type: 'toggle',
+    name: 'EXPERIMENTAL_SEND_MAX',
+    title: 'Experimental Send MAX',
+    description:
+      'Support sending the entire account balance with a MAX toggle. XRP not yet supported.',
+  },
+  {
+    shadow: true, // not correct yet
+    type: 'toggle',
+    name: 'EXPERIMENTAL_ROI_CALCULATION',
+    title: 'Experimental ROI calculation',
+    description:
+      'Changes the calculation method of the portfolio percentages by assuming that receiving crypto is a buy and sending is a sell',
+  },
 ]
 
 const lsKey = 'experimentalFlags'
+const lsKeyVersion = `${lsKey}_llversion`
 
-export const getLocalStorageEnvs = () => {
+export const getLocalStorageEnvs = (): { [_: string]: any } => {
   const maybeData = window.localStorage.getItem(lsKey)
-  return maybeData ? JSON.parse(maybeData) : {}
+  if (!maybeData) return {}
+  const obj = JSON.parse(maybeData)
+  if (typeof obj !== 'object' || !obj) return {}
+  Object.keys(obj).forEach(k => {
+    if (!experimentalFeatures.find(f => f.name === k)) {
+      delete obj[k]
+    }
+  })
+  return obj
+}
+
+if (window.localStorage.getItem(lsKeyVersion) !== __APP_VERSION__) {
+  window.localStorage.removeItem(lsKey)
+  window.localStorage.setItem(lsKeyVersion, __APP_VERSION__)
 }
 
 const envs = getLocalStorageEnvs()

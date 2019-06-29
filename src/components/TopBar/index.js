@@ -2,16 +2,13 @@
 
 import React, { PureComponent, Fragment } from 'react'
 import { compose } from 'redux'
-import { translate, Trans } from 'react-i18next'
+import { translate } from 'react-i18next'
 import { connect } from 'react-redux'
 import styled from 'styled-components'
 import { withRouter } from 'react-router'
-import { Link } from 'react-router-dom'
 import type { Location, RouterHistory } from 'react-router'
 
 import type { T } from 'types/common'
-import { darken } from 'styles/helpers'
-import useExperimental from 'hooks/useExperimental'
 
 import { lock } from 'reducers/application'
 import { hasPasswordSelector } from 'reducers/settings'
@@ -27,6 +24,7 @@ import CurrenciesStatusBanner from 'components/CurrenciesStatusBanner'
 
 import ActivityIndicator from './ActivityIndicator'
 import ItemContainer from './ItemContainer'
+import Breadcrumb from './Breadcrumb'
 
 const Container = styled(Box).attrs({
   px: 6,
@@ -45,38 +43,6 @@ const Inner = styled(Box).attrs({
   flow: 4,
   align: 'center',
 })``
-
-const Tag = styled(Link)`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Open Sans';
-  font-weight: bold;
-  font-size: 10px;
-  height: 22px;
-  line-height: 22px;
-  padding: 0 10px;
-  border-radius: 16px;
-  color: ${p => p.theme.colors.white};
-  background-color: ${p => p.theme.colors.experimentalBlue};
-  text-decoration: none;
-
-  &:hover {
-    background-color: ${p => darken(p.theme.colors.experimentalBlue, 0.05)};
-  }
-`
-
-const TagContainer = () => {
-  const isExperimental = useExperimental()
-
-  return isExperimental ? (
-    <Box justifyContent="center">
-      <Tag to="/settings/experimental">
-        <Trans i18nKey="common.experimentalFeature" />
-      </Tag>
-    </Box>
-  ) : null
-}
 
 const Bar = styled.div`
   margin-left: 5px;
@@ -126,47 +92,55 @@ class TopBar extends PureComponent<Props> {
       history.push(url)
     }
   }
+
   render() {
     const { hasPassword, hasAccounts, t } = this.props
 
     return (
       <Container bg="lightGrey" color="graphite">
         <Inner>
-          <Box grow horizontal>
-            <TagContainer />
-            <Box grow />
-            <CurrenciesStatusBanner />
-            {hasAccounts && (
-              <Fragment>
-                <ActivityIndicator />
-                <Box justifyContent="center">
-                  <Bar />
-                </Box>
-              </Fragment>
-            )}
-            <Tooltip render={() => t('settings.title')} data-e2e="setting_button">
-              <ItemContainer isInteractive onClick={this.navigateToSettings}>
-                <IconSettings size={16} />
-              </ItemContainer>
-            </Tooltip>
-            {hasPassword && ( // FIXME this should be a dedicated component. therefore this component don't need to connect()
-              <Fragment>
-                <Box justifyContent="center">
-                  <Bar />
-                </Box>
-                <Tooltip render={() => t('common.lock')}>
-                  <ItemContainer isInteractive justifyContent="center" onClick={this.handleLock}>
-                    <IconLock size={16} />
-                  </ItemContainer>
-                </Tooltip>
-              </Fragment>
-            )}
+          <Box grow horizontal justifyContent="space-between">
+            <Breadcrumb />
+            <Box horizontal>
+              <CurrenciesStatusBanner />
+              {hasAccounts && (
+                <Fragment>
+                  <ActivityIndicator />
+                  <Box justifyContent="center">
+                    <Bar />
+                  </Box>
+                </Fragment>
+              )}
+              <Tooltip render={() => t('settings.title')} data-e2e="setting_button">
+                <ItemContainer isInteractive onClick={this.navigateToSettings}>
+                  <IconSettings size={16} />
+                </ItemContainer>
+              </Tooltip>
+              {hasPassword && (
+                <Fragment>
+                  <Box justifyContent="center">
+                    <Bar />
+                  </Box>
+                  <Tooltip render={() => t('common.lock')}>
+                    <ItemContainer isInteractive justifyContent="center" onClick={this.handleLock}>
+                      <IconLock size={16} />
+                    </ItemContainer>
+                  </Tooltip>
+                </Fragment>
+              )}
+            </Box>
           </Box>
         </Inner>
+        <SeparatorBar />
       </Container>
     )
   }
 }
+
+export const SeparatorBar = styled.div`
+  height: 1px;
+  border-bottom: 1px solid ${p => p.theme.colors.fog};
+`
 
 export default compose(
   // $FlowFixMe

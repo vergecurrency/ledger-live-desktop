@@ -31,6 +31,7 @@
     "back": "Назад",
     "reset": "Сбросить",
     "retry": "Повторить попытку",
+    "range": "Range",
     "stop": "Остановить",
     "close": "Закрыть",
     "eastern": "Восточный",
@@ -41,7 +42,7 @@
     "copyAddress": "Копировать",
     "copied": "Скопировано",
     "addressCopied": "Адрес скопирован",
-    "experimentalFeature": "Experimental feature",
+    "experimentalFeature": "EXPERIMENTAL FEATURE ACTIVE",
     "lockScreen": {
       "title": "С возвращением",
       "subTitle": null,
@@ -79,12 +80,20 @@
       "year": "прошедший год"
     }
   },
+  "fees": {
+    "slow": "Slow",
+    "fast": "Fast"
+  },
   "sidebar": {
     "menu": "Меню",
-    "accounts": "Счета ({{count}})",
+    "accounts": "Accounts",
     "manager": "Диспетчер",
     "exchange": "Купить крипто",
-    "developer": "Инструменты разработчика"
+    "developer": "Инструменты разработчика",
+    "newUpdate": {
+      "title": "New Update",
+      "description": "Your accounts have been moved to a new dedicated page!"
+    }
   },
   "account": {
     "lastOperations": "Последние операции",
@@ -112,6 +121,26 @@
       }
     }
   },
+  "accounts": {
+    "title": "Accounts",
+    "noResultFound": "No accounts found.",
+    "order": {
+      "name|asc": "Name A-Z",
+      "name|desc": "Name Z-A",
+      "balance|asc": "Lowest Balance",
+      "balance|desc": "Highest Balance"
+    },
+    "range": {
+      "week": "Week",
+      "month": "Month",
+      "year": "Year"
+    },
+    "contextMenu": {
+      "receive": "Receive",
+      "send": "Send",
+      "edit": "Edit Account"
+    }
+  },
   "banners": {
     "promoteMobile": "Наслаждайтесь использованием Ledger Live теперь и на мобильных устройствах с {{productName}}",
     "genericTerminatedCrypto": "{{coinName}} больше не поддерживается"
@@ -133,15 +162,11 @@
     "summary": "Ознакомьтесь со сводной информацией о счете.",
     "summary_plural": "Ознакомьтесь со сводной информацией о таком количестве счетов: {{count}}.",
     "recentActivity": "Последние операции",
-    "totalBalance": "Общий баланс",
-    "accountsOrder": {
-      "name": "имя",
-      "balance": "баланс"
-    }
+    "totalBalance": "Общий баланс"
   },
   "currentAddress": {
     "title": "Текущий адрес",
-    "for": "Адрес для счета <1><0>{{accountName}}</0></1>",
+    "for": "Address for <1><0>{{name}}</0></1>",
     "messageIfUnverified": "Please verify that the {{currencyName}} address shown in Ledger Live matches the one on your Ledger device",
     "messageIfAccepted": "Адрес подтвержден. Если он был вставлен из буфера обмена или введен в результате сканирования QR-кода, проверьте его еще раз.",
     "messageIfSkipped": "На используемом устройстве Ledger адрес {{currencyName}} не был подтвержден. Для обеспечения оптимального уровня безопасности проверьте его."
@@ -167,7 +192,7 @@
   },
   "partners": {
     "title": "Купить крипто",
-    "desc": "Попробуйте некоторые специально подобранных служб",
+    "desc": "Попробуйте некоторые из специально подобранных служб",
     "visitWebsite": "Посетить веб-сайт",
     "btcdirect": "Совершайте операции покупки и продажи без особых усилий вместе с ведущей в Европе брокерской компанией криптовалют. Регистрируйтесь бесплатно и получайте криптоактивы в считанные минуты! На ресурсе Trustpilot пользователи оценили нас в 8,7 балла",
     "changelly": "Changelly - это широко используемая биржа криптоактивов, на которой представлены свыше 100 монет и токенов.",
@@ -184,12 +209,23 @@
     "taxtoken": "Автоматизированная программа учета налогов и затрат на операции с криптовалютой для граждан США.",
     "thorswap": "ThorSwap представляет собой мгновенную, безопасную и честную биржу криптоактивов, работающую на основе децентрализованных технологий атомных свопов. Это наиболее удобный способ начать торговлю, не требующий регистрации или соблюдения правила KYC (Know Your Customer — знай своего клиента) для проведения транзакций на небольшую сумму.",
     "bitpanda": "Bitpanda — это ведущая в Европе розничная брокерская компания, специализирующаяся на покупке и продаже такой криптовалюты, как Bitcoin, Ethereum, IOTA и много других. Вносите деньги, используя кредитную карточку, систему SOFORT-Transfer, NETELLER и другие варианты.",
-    "exmo": "Основанная в 2013 году биржа EXMO, отделения которой расположены в Лондоне, Киеве, Барселоне и Москве, занимает первое место среди бирж в Восточной Европе и является одной из крупнейших в мире по объему и ликвидности."
+    "exmo": "Основанная в 2013 году биржа EXMO, отделения которой расположены в Лондоне, Киеве, Барселоне и Москве, занимает первое место среди бирж в Восточной Европе и является одной из крупнейших в мире по объему и ликвидности.",
+    "ndax": "Canada’s leading cryptocurrency exchange, NDAX provides a regulated, secure and intuitive platform to buy and sell Bitcoin, Litecoin, Ethereum, XRP and other digital assets. Other key features include advanced trading, free deposits, and an institutional-grade custody solution via Ledger Vault."
   },
   "genuinecheck": {
     "modal": {
       "title": "Проверка подлинности"
-    }
+    },
+    "deviceInBootloader": "Your device is in Bootloader mode. Click {{button}} to update it."
+  },
+  "tokensList": {
+    "title": "Tokens",
+    "cta": "Receive token",
+    "placeholder": "To add tokens, simply send them to your Ethereum address.",
+    "link": "Learn more",
+    "seeTokens": "See tokens ({{tokenCount}})",
+    "hideTokens": "Hide tokens ({{tokenCount}})",
+    "tooltip": "Token from"
   },
   "addAccounts": {
     "title": "Добавить счета",
@@ -202,8 +238,6 @@
     "connectDevice": {
       "desc": "Чтобы добавить счета <1><0>{{currencyName}}</0></1>, выполните перечисленные ниже действия."
     },
-    "accountAlreadyImportedSubtitle": "Счета, находящиеся в портфеле: ({{count}})",
-    "accountToImportSubtitle": "Добавить существующий счет",
     "accountToImportSubtitle_plural": "Добавить существующие счета",
     "selectAll": "Выбрать все ({{count}})",
     "unselectAll": "Отменить выбор всех ({{count}})",
@@ -217,7 +251,6 @@
     "successDescription": "Добавить больше счетов или вернуться в портфель",
     "successDescription_plural": "Добавить больше счетов или вернуться в портфель",
     "createNewAccount": {
-      "title": "Добавить новый счет",
       "noOperationOnLastAccount": "Невозможно добавить новый счет до получения на счет <1><0>{{accountName}}</0></1> активов.",
       "noAccountToCreate": "Счета в <1><0>{{currencyName}}</0></1> для создания не найдены"
     },
@@ -225,6 +258,20 @@
       "addMore": "Добавить еще",
       "add": "Добавить счет",
       "add_plural": "Добавить счета"
+    },
+    "sections": {
+      "importable": {
+        "title": "Add existing account"
+      },
+      "creatable": {
+        "title": "Add new account"
+      },
+      "imported": {
+        "title": "Accounts already in portfolio ({{count}})"
+      },
+      "migrate": {
+        "title": "Accounts to update"
+      }
     }
   },
   "operationDetails": {
@@ -233,6 +280,7 @@
     "date": "Дата",
     "status": "Статус",
     "confirmed": "Подтверждено",
+    "failed": "Failed",
     "notConfirmed": "Не подтверждено",
     "fees": "Комиссия",
     "noFees": "Без комиссии",
@@ -253,9 +301,14 @@
       "all": "Каталог приложений",
       "installing": "Установка {{app}}...",
       "uninstalling": "Удаление {{app}}...",
-      "installSuccess": "{{app}} успешно установлено",
+      "installSuccess": "{{app}} was successfully installed",
+      "unsupportedSuccess": "Learn how to use {{app}}",
       "uninstallSuccess": "{{app}} удалено",
-      "help": "Проверьте, какие приложения уже установлены на устройстве."
+      "supportedCurrency": "{{app}} is now installed on your {{device}}. Add an account so you can send and receive funds",
+      "unsupportedCurrency": "{{app}} is not supported in Ledger Live. Click the button to learn how to use it",
+      "help": "Проверьте, какие приложения уже установлены на устройстве.",
+      "installed": "App installed",
+      "uninstalled": "App uninstalled"
     },
     "firmware": {
       "installed": "Версия встроенного ПО {{version}}",
@@ -270,11 +323,12 @@
       "steps": {
         "downloadingUpdate": "Downloading update",
         "updateMCU": "Обновление встроенного ПО",
+        "reset": "Prepare device",
         "osu": "Установка обновления ОС...",
         "flash-mcu": "Обновление микроконтроллера...",
         "flash-bootloader": "Обновление загрузчика...",
         "firmware": "Обновление встроенного ПО...",
-        "flash": "Выполняется перепрошивка устройства..."
+        "flash": "Preparing your device..."
       },
       "confirmIdentifier": "Проверить идентификатор",
       "confirmIdentifierText": "Убедитесь в том, что идентификатор на устройстве совпадает с приведенным ниже идентификатором. Для подтверждения нажмите правую кнопку и введите PIN-код.",
@@ -283,8 +337,26 @@
       "mcuFirst": "Отсоедините USB-кабель от устройства.",
       "mcuSecond": "Press the left button and hold it while you reconnect the USB cable until the <1><0>{{repairProcessing}}</0></1> screen appears",
       "mcuPin": "Дождитесь завершения обновления.",
+      "mcuBlueFirst": "Press and hold the side button for 10 seconds to turn off the device. Release the button.",
+      "mcuBlueSecond": "Press and hold the button for at least 5 seconds until the Boot Options are displayed. Tap Bootloader Mode",
       "successTitle": "Встроенное ПО обновлено",
-      "successText": "Повторно установите приложения на устройстве."
+      "successText": "Повторно установите приложения на устройстве.",
+      "resetTitle": "Prepare Device",
+      "resetSteps": {
+        "first": "1. Reset your device",
+        "connect": "Connect the {{deviceName}} to your computer using the USB cable.",
+        "turnOn": "Press the button on the device to turn it on.",
+        "falsePin": "Enter three wrong PIN codes to reset the device.",
+        "turnOff": "Press and hold the side button until {{action}} is displayed.",
+        "confirmTurnOff": "Tap {{action}} to confirm.",
+        "second": "2. Boot in {{mode}} mode",
+        "boot": "Press and hold the side button until {{option}} is displayed",
+        "recoveryMode": "Tap {{mode}} Mode. Wait until the dashboard appears.",
+        "third": "3. Uninstall all apps",
+        "openLive": "Open the Manager in Ledger Live.",
+        "uninstall": "Click on the grey trash icon for all apps currently installed on the {{deviceName}}. This makes room for the firmware installer.",
+        "disclaimer": "Note: Your funds are not affected by this operation, the private keys to access your crypto assets in the blockchain remain secured on your Recovery sheet."
+      }
     },
     "title": "Диспетчер",
     "subtitle": "Установка или удаление приложений на устройстве",
@@ -299,7 +371,9 @@
     "steps": {
       "chooseAccount": {
         "title": "Счет",
-        "label": "Счет для зачисления средств"
+        "label": "Счет для зачисления средств",
+        "parentAccount": "1. Choose {{currencyName}} Account",
+        "token": "2. Choose {{currencyName}} Token"
       },
       "connectDevice": {
         "title": "Устройство",
@@ -326,6 +400,7 @@
         "recipientAddress": "Адрес получателя",
         "amount": "Сумма",
         "fees": "Комиссия за пользование сетью",
+        "useMax": "Max",
         "advancedOptions": "Дополнительные параметры",
         "useRBF": "Использовать транзакцию Replace-by-Fee (замена с повышением комиссии)",
         "message": "Оставьте сообщение (140)",
@@ -363,12 +438,23 @@
     "title": "Заметки о выпуске",
     "version": "Ledger Live {{versionNb}}"
   },
+  "distribution": {
+    "asset": "Asset",
+    "price": "Price",
+    "distribution": "Distribution",
+    "amount": "Amount",
+    "value": "Value",
+    "seeAll": "See all",
+    "header": "Asset distribution ({{count}})"
+  },
   "settings": {
     "title": "Настройки",
     "tabs": {
       "display": "Общие",
       "export": "Accounts",
-      "currencies": "Валюта",
+      "cryptoAssets": "Crypto assets",
+      "currencies": "Crypto assets",
+      "rates": "Rates",
       "help": "Справка",
       "about": "О программе",
       "experimental": "Experimental features"
@@ -407,11 +493,22 @@
       "stockDesc": "Выберите «Западный», чтобы увеличение рыночной стоимости отображалось синим цветом, или «Восточный», чтобы увеличение рыночной стоимости отображалось красным цветом."
     },
     "currencies": {
-      "desc": "Для изменения настроек криптоактива его необходимо выделить.",
+      "desc": "Change settings for each of your crypto assets",
+      "select": "Select a crypto asset to edit its settings.",
       "exchange": "Обменник ({{ticker}} → BTC)",
       "exchangeDesc": "Выберите обменник для обмена из {{currencyName}} в биткоины, используемый для оценки ценности криптоактивов ({{ticker}} → BTC → {{fiat}}).",
       "confirmationsNb": "Количество подтверждений",
       "confirmationsNbDesc": "Задайте количество подтверждений транзакции, выполняемых сетью, необходимое для того, чтобы такая транзакция была отмечена как подтвержденная."
+    },
+    "rates": {
+      "desc": "Here are all the rates that are used by Ledger Live to calculate countervalues.\nChoose which rate providers are used for each rate.",
+      "fromTo": "{{from}} to {{to}}",
+      "cryptoToFiat": "Crypto to fiat",
+      "cryptoToCrypto": "Crypto to Crypto",
+      "rate": "Rate",
+      "last": "Last {{days}} days",
+      "price": "Price",
+      "exchange": "Rate provider"
     },
     "profile": {
       "password": "Блокировка паролем",
@@ -765,6 +862,9 @@
       "openAppButton": "Открыть Ledger Live"
     }
   },
+  "connectTroubleshooting": {
+    "desc": "Having a hard time connecting your device?"
+  },
   "errors": {
     "generic": {
       "title": "{{message}}",
@@ -777,6 +877,10 @@
     "BtcUnmatchedApp": {
       "title": "Это не то приложение.",
       "description": "Откройте приложение ‘{{managerAppName}}‘ на устройстве."
+    },
+    "CurrencyNotSupported": {
+      "title": "{{currencyName}} is not supported",
+      "description": "This crypto asset is not yet supported. Please contact us."
     },
     "DeviceNotGenuine": {
       "title": "Возможно, устройство не подлинное.",
@@ -956,7 +1060,7 @@
     },
     "DeviceAppVerifyNotSupported": {
       "title": "Требуется обновить приложение.",
-      "description": "Чтобы обновить приложение, откройте диспетчер."
+      "description": "Uninstall and reinstall the {{managerAppName}} app in the Manager"
     },
     "InvalidAddress": {
       "title": "Этот адрес {{currencyName}} недействительный."

@@ -4,12 +4,10 @@ import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import styled from 'styled-components'
 import { createStructuredSelector } from 'reselect'
-
-import type { Account, Operation } from '@ledgerhq/live-common/lib/types'
-
-import type { T, CurrencySettings } from 'types/common'
-
-import { currencySettingsForAccountSelector, marketIndicatorSelector } from 'reducers/settings'
+import type { TokenAccount, Account, Operation } from '@ledgerhq/live-common/lib/types'
+import { getMainAccount } from '@ledgerhq/live-common/lib/account'
+import type { T } from 'types/common'
+import { confirmationsNbForCurrencySelector, marketIndicatorSelector } from 'reducers/settings'
 import { getMarketColor } from 'styles/helpers'
 
 import Box from 'components/base/Box'
@@ -17,7 +15,10 @@ import Box from 'components/base/Box'
 import ConfirmationCheck from './ConfirmationCheck'
 
 const mapStateToProps = createStructuredSelector({
-  currencySettings: currencySettingsForAccountSelector,
+  confirmationsNb: (state, { account, parentAccount }) =>
+    confirmationsNbForCurrencySelector(state, {
+      currency: getMainAccount(account, parentAccount).currency,
+    }),
   marketIndicator: marketIndicatorSelector,
 })
 
@@ -30,8 +31,9 @@ const Cell = styled(Box).attrs({
 `
 
 type Props = {
-  account: Account,
-  currencySettings: CurrencySettings,
+  account: Account | TokenAccount,
+  parentAccount?: Account,
+  confirmationsNb: number,
   marketIndicator: string,
   t: T,
   operation: Operation,
@@ -39,13 +41,14 @@ type Props = {
 
 class ConfirmationCell extends PureComponent<Props> {
   render() {
-    const { account, currencySettings, t, operation, marketIndicator } = this.props
+    const { account, parentAccount, confirmationsNb, t, operation, marketIndicator } = this.props
+    const mainAccount = getMainAccount(account, parentAccount)
 
     const isNegative = operation.type === 'OUT'
 
     const isConfirmed =
-      (operation.blockHeight ? account.blockHeight - operation.blockHeight : 0) >
-      currencySettings.confirmationsNb
+      (operation.blockHeight ? mainAccount.blockHeight - operation.blockHeight : 0) >
+      confirmationsNb
 
     const marketColor = getMarketColor({
       marketIndicator,
@@ -58,6 +61,7 @@ class ConfirmationCell extends PureComponent<Props> {
           type={operation.type}
           isConfirmed={isConfirmed}
           marketColor={marketColor}
+          hasFailed={operation.hasFailed}
           t={t}
         />
       </Cell>

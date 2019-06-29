@@ -2,6 +2,7 @@
 
 import React, { PureComponent, Fragment } from 'react'
 import uniq from 'lodash/uniq'
+import { Redirect } from 'react-router'
 import { compose } from 'redux'
 import IconNanoX from 'icons/device/NanoXBanner'
 import { translate } from 'react-i18next'
@@ -31,12 +32,11 @@ import StickyBackToTop from 'components/StickyBackToTop'
 import styled from 'styled-components'
 import { openURL } from 'helpers/linking'
 import BalanceSummary from './BalanceSummary'
-import EmptyState from './EmptyState'
 import CurrentGreetings from './CurrentGreetings'
 import SummaryDesc from './SummaryDesc'
-import AccountCardList from './AccountCardList'
 import TopBanner, { FakeLink } from '../TopBanner'
 import { urls } from '../../config/urls'
+import AssetDistribution from '../AssetDistribution'
 
 const mapStateToProps = createStructuredSelector({
   accounts: accountsSelector,
@@ -65,15 +65,14 @@ class DashboardPage extends PureComponent<Props> {
     this.props.saveSettings({ selectedTimeRange: item.key })
   }
 
-  Header = ({ balanceAvailable, balanceHistory }) => (
+  Header = ({ portfolio }) => (
     <BalanceInfos
       t={this.props.t}
       unit={this.props.counterValue.units[0]}
-      isAvailable={balanceAvailable}
-      totalBalance={balanceHistory[balanceHistory.length - 1].value}
+      isAvailable={portfolio.balanceAvailable}
       since={this.props.selectedTimeRange}
-      sinceBalance={balanceHistory[0].value}
-      refBalance={balanceHistory[0].value}
+      valueChange={portfolio.countervalueChange}
+      totalBalance={portfolio.balanceHistory[portfolio.balanceHistory.length - 1].value}
     />
   )
 
@@ -98,10 +97,9 @@ class DashboardPage extends PureComponent<Props> {
               ),
             }}
             status={'dark'}
-            bannerId={'promoNanoX'}
+            bannerId={'promoNanoX3'}
             dismissable
           />
-          <SeparatorBar />
         </TopBannerContainer>
         <RefreshAccountsOrdering onMount />
         <TrackPage
@@ -125,7 +123,6 @@ class DashboardPage extends PureComponent<Props> {
                   />
                 </Box>
               </Box>
-
               <BalanceSummary
                 counterValue={counterValue}
                 chartId="dashboard-chart"
@@ -134,25 +131,20 @@ class DashboardPage extends PureComponent<Props> {
                 range={selectedTimeRange}
                 Header={this.Header}
               />
-
-              <AccountCardList
-                onAccountClick={this.onAccountClick}
-                accounts={accounts}
-                range={selectedTimeRange}
-              />
-
+              <AssetDistribution />
               {totalOperations > 0 && (
                 <OperationsList
                   onAccountClick={this.onAccountClick}
                   accounts={accounts}
                   title={t('dashboard.recentActivity')}
                   withAccount
+                  withTokenAccounts
                 />
               )}
-              <StickyBackToTop />
+              <StickyBackToTop scrollUpOnMount />
             </Fragment>
           ) : (
-            <EmptyState />
+            <Redirect to="/accounts" />
           )}
         </Box>
       </Fragment>
@@ -160,17 +152,13 @@ class DashboardPage extends PureComponent<Props> {
   }
 }
 // This forces only one visible top banner at a time
-const TopBannerContainer = styled.div`
+export const TopBannerContainer = styled.div`
+  margin-top: 8px;
+  z-index: 19;
+
   & > *:not(:first-child) {
     display: none;
   }
-`
-// If no banners are present, the SeparatorBar appears
-export const SeparatorBar = styled.div`
-  height: 1px;
-  border-bottom: 1px solid ${p => p.theme.colors.fog};
-  margin-bottom: 15px;
-  margin-top: -20px;
 `
 
 export default compose(

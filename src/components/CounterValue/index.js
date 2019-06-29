@@ -3,12 +3,11 @@
 import type { BigNumber } from 'bignumber.js'
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import type { CryptoCurrency, Currency } from '@ledgerhq/live-common/lib/types'
+import type { Currency } from '@ledgerhq/live-common/lib/types'
 
 import {
   counterValueCurrencySelector,
-  currencySettingsSelector,
-  counterValueExchangeSelector,
+  exchangeSettingsForPairSelector,
   intermediaryCurrency,
 } from 'reducers/settings'
 import CounterValues from 'helpers/countervalues'
@@ -19,7 +18,7 @@ import type { State } from 'reducers'
 
 type OwnProps = {
   // wich market to query
-  currency: CryptoCurrency,
+  currency: Currency,
 
   // when? if not given: take latest
   date?: Date,
@@ -29,6 +28,8 @@ type OwnProps = {
   alwaysShowSign?: boolean,
 
   subMagnitude?: number,
+
+  placeholder?: React$Node,
 }
 
 type Props = OwnProps & {
@@ -40,12 +41,16 @@ type Props = OwnProps & {
 const mapStateToProps = (state: State, props: OwnProps) => {
   const { currency, value, date, subMagnitude } = props
   const counterValueCurrency = counterValueCurrencySelector(state)
-  const fromExchange = currencySettingsSelector(state, { currency }).exchange
-  const toExchange = counterValueExchangeSelector(state)
+  const intermediary = intermediaryCurrency(currency, counterValueCurrency)
+  const fromExchange = exchangeSettingsForPairSelector(state, { from: currency, to: intermediary })
+  const toExchange = exchangeSettingsForPairSelector(state, {
+    from: intermediary,
+    to: counterValueCurrency,
+  })
   const counterValue = CounterValues.calculateWithIntermediarySelector(state, {
     from: currency,
     fromExchange,
-    intermediary: intermediaryCurrency,
+    intermediary,
     toExchange,
     to: counterValueCurrency,
     value,
@@ -64,10 +69,11 @@ class CounterValue extends PureComponent<Props> {
     alwaysShowSign: true, // FIXME this shouldn't be true by default
   }
   render() {
-    const { value, counterValueCurrency, date, alwaysShowSign, ...props } = this.props
+    const { value, counterValueCurrency, date, alwaysShowSign, placeholder, ...props } = this.props
     if (!value) {
-      return null
+      return placeholder || null
     }
+
     return (
       <FormattedVal
         val={value}
